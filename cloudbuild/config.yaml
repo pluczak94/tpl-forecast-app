@@ -1,0 +1,34 @@
+steps:
+  - name: 'maven:3-openjdk-11-slim'
+    args:
+      - install
+      - -Dspring.profiles.active=test
+    id: mvn
+    entrypoint: mvn
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/app-weather:$SHORT_SHA'
+      - .
+    id: docker
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - 'gcr.io/$PROJECT_ID/app-weather:$SHORT_SHA'
+    id: push image
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - '-c'
+      - |
+        sed "s/PROJECT_ID/${PROJECT_ID}/g" ./k8s/app.yaml | \
+        sed "s/SHORT_SHA/${SHORT_SHA}/g" > ./k8s/kubernetes.yaml
+    id: Generate manifest
+    entrypoint: /bin/sh
+  - name: gcr.io/cloud-builders/gke-deploy
+    args:
+      - run
+      - '--filename=./k8s/kubernetes.yaml'
+      - '--cluster=tcp-cluster-dev'
+      - '--location=europe-central2'
+    id: kubectl
