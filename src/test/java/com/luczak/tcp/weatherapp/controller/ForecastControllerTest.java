@@ -28,7 +28,7 @@ class ForecastControllerTest {
     @Test
     void noParametersProvided_shouldReturnBadRequest() throws Exception {
 
-        mvc.perform(get("/api/forecast")
+        mvc.perform(get("/api/currentForecast")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
@@ -36,7 +36,7 @@ class ForecastControllerTest {
     @Test
     void correctRequest_shouldInvokeForecastService() throws Exception {
 
-        mvc.perform(get("/api/forecast?latitude=1&longitude=1")
+        mvc.perform(get("/api/currentForecast?latitude=1&longitude=1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 

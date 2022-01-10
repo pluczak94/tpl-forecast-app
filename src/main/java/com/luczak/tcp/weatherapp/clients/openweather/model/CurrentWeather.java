@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.luczak.tcp.weatherapp.utils.UnixToLocalDateDeserializer;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 
@@ -15,7 +16,9 @@ public class CurrentWeather {
     @JsonDeserialize(using = UnixToLocalDateDeserializer.class)
     @JsonProperty("dt")
     private LocalDate date;
-    private double temp;
-    private int humidity;
+    @NotNull
+    private Double temp;
+    @NotNull
+    private Integer humidity;
 
 }

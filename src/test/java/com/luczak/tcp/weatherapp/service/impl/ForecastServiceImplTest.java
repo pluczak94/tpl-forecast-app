@@ -36,7 +36,7 @@ class ForecastServiceImplTest {
     @Test
     void getForecastForLocation() {
         ForecastResponse expectedResponse = new ForecastResponse();
-        when(foreCastApiClient.callApi(1, 1)).thenReturn(new OpenWeatherResponse());
+        when(foreCastApiClient.getClientApiResponse(1, 1)).thenReturn(new OpenWeatherResponse());
         when(forecastConverter.convertToResponse(any())).thenReturn(expectedResponse);
 
         ForecastResponse forecastForLocation = forecastService.getForecastForLocation(1, 1);

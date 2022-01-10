@@ -7,6 +7,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DailyTemperature {
 
-    private double day;
-    private double night;
+    private Double day;
+    private Double night;
 }

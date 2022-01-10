@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,11 +27,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class ForecastApiTest {
 
+    public static final String MOCK_API = "http://localhost:8081/api?lat=%d.0&lon=%d.0&units=metric&exclude=alerts,minutely,hourly&appId=API_KEY";
+    public static final String REQUEST_API = "/api/currentForecast?latitude=%d&longitude=%d";
     @Autowired
     private MockMvc mvc;
 
@@ -54,54 +57,55 @@ class ForecastApiTest {
 
     @Test
     void nullResponseFromOWApi() throws Exception {
+
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://localhost:8081/api?lat=1.0&lon=1.0&units=metric&exclude=alerts,minutely,hourly&appId=API_KEY")))
+                requestTo(new URI(String.format(MOCK_API, 1, 1))))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(objectMapper.writeValueAsString(null))
                 );
 
-        mvc.perform(get("/api/forecast?latitude=1&longitude=1"))
+        mvc.perform(get(String.format(REQUEST_API, 1, 1)))
                 .andDo(print()).andExpect(status().is5xxServerError());
     }
 
     @Test
     void wrongResponseFromOWApi() throws Exception {
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://localhost:8081/api?lat=1.0&lon=1.0&units=metric&exclude=alerts,minutely,hourly&appId=API_KEY")))
+                requestTo(new URI(String.format(MOCK_API, 2, 2))))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body("wrong value")
+                        .body("{\"key\":\"value\"}")
                 );
 
-        mvc.perform(get("/api/forecast?latitude=1&longitude=1"))
+        mvc.perform(get(String.format(REQUEST_API, 2, 2)))
                 .andDo(print()).andExpect(status().is5xxServerError());
     }
 
     @Test
     void correctResponseFromOWApi() throws Exception {
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://localhost:8081/api?lat=1.0&lon=1.0&units=metric&exclude=alerts,minutely,hourly&appId=API_KEY")))
+                requestTo(new URI(String.format(MOCK_API, 3, 3))))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ResourceReader.asString(correctOWAPIResponse))
                 );
 
-        mvc.perform(get("/api/forecast?latitude=1&longitude=1"))
+        mvc.perform(get(String.format(REQUEST_API, 3, 3)))
                 .andDo(print()).andExpect(status().isOk());
     }
 
     @Test
     void exceptionFromOWApi() throws Exception {
-        mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://localhost:8081/api?lat=1.0&lon=1.0&units=metric&exclude=alerts,minutely,hourly&appId=API_KEY")))
+        mockServer.expect(ExpectedCount.times(3),
+                requestTo(new URI(String.format(MOCK_API, 4, 4))))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        mvc.perform(get("/api/forecast?latitude=1&longitude=1"))
+        mvc.perform(get(String.format(REQUEST_API, 4, 4)))
                 .andDo(print()).andExpect(status().is5xxServerError());
     }
 

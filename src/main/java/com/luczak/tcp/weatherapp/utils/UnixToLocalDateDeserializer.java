@@ -14,8 +14,8 @@ public class UnixToLocalDateDeserializer extends JsonDeserializer<LocalDate> {
     @Override
     public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 
-        String str = jsonParser.getText();
-        Instant instant = Instant.ofEpochSecond(Long.parseLong(str));
+        var str = jsonParser.getText();
+        var instant = Instant.ofEpochSecond(Long.parseLong(str));
         return LocalDate.ofInstant(instant, ZoneOffset.UTC);
     }
 

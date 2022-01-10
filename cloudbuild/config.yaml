@@ -2,7 +2,6 @@ steps:
   - name: 'maven:3-openjdk-11-slim'
     args:
       - install
-      - -Dspring.profiles.active=test
     id: mvn
     entrypoint: mvn
   - name: gcr.io/cloud-builders/docker

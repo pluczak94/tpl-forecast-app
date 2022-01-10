@@ -2,16 +2,20 @@ package com.luczak.tcp.weatherapp.clients.openweather;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luczak.tcp.weatherapp.clients.openweather.validator.OpenWeatherResponseValidator;
 import com.luczak.tcp.weatherapp.config.OpenWeatherConfig;
-import com.luczak.tcp.weatherapp.exception.OpenWeatherClientException;
+import com.luczak.tcp.weatherapp.exception.ClientConnectionException;
+import com.luczak.tcp.weatherapp.exception.ClientResponseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpServerErrorException;
@@ -27,6 +31,8 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class OpenWeatherClientTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -37,6 +43,8 @@ class OpenWeatherClientTest {
     private RestTemplate restTemplate = new RestTemplate();
     @Spy
     private OpenWeatherConfig config = new OpenWeatherConfig();
+    @Spy
+    private OpenWeatherResponseValidator validator = new OpenWeatherResponseValidator();
 
     @InjectMocks
     private OpenWeatherClient openWeatherClient;
@@ -63,8 +71,8 @@ class OpenWeatherClientTest {
                         .body(objectMapper.writeValueAsString(null))
                 );
 
-        Exception exception = assertThrows(OpenWeatherClientException.class, () -> openWeatherClient.callApi(1, 1));
-        assertEquals("Null response from OpenWeather Api", exception.getMessage());
+        Exception exception = assertThrows(ClientResponseException.class, () -> openWeatherClient.getClientApiResponse(1, 1));
+        assertEquals("Invalid response from OpenWeather Api", exception.getMessage());
     }
 
     @Test
@@ -78,7 +86,7 @@ class OpenWeatherClientTest {
                         .body(objectMapper.writeValueAsString(5))
                 );
 
-        Exception exception = assertThrows(OpenWeatherClientException.class, () -> openWeatherClient.callApi(1, 1));
+        Exception exception = assertThrows(ClientConnectionException.class, () -> openWeatherClient.getClientApiResponse(1, 1));
         assertEquals(RestClientException.class, exception.getCause().getClass());
     }
 
@@ -91,7 +99,7 @@ class OpenWeatherClientTest {
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                 );
 
-        Exception exception = assertThrows(OpenWeatherClientException.class, () -> openWeatherClient.callApi(1, 1));
+        Exception exception = assertThrows(ClientConnectionException.class, () -> openWeatherClient.getClientApiResponse(1, 1));
         assertEquals(HttpServerErrorException.InternalServerError.class, exception.getCause().getClass());
     }
 

@@ -20,6 +20,17 @@ spec:
       containers:
         - name: weather-app
           image: gcr.io/PROJECT_ID/app-weather:SHORT_SHA
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: weather-config
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: weather-config
+                  key: redis_port
           ports:
             - containerPort: 8080
 
