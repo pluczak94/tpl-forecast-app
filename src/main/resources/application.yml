@@ -1,0 +1,20 @@
+open-weather:
+  config:
+    apiKey: ${sm://openweather-key/1}
+    exclude: alerts,minutely,hourly
+    units: metric
+    url: https://api.openweathermap.org/data/2.5/onecall
+
+spring:
+  cache:
+    redis:
+      time-to-live: 60s
+  redis:
+    host:  ${REDIS_HOST}
+    port: ${REDIS_PORT}
+
+resilience4j.retry:
+  instances:
+    weatherAPi:
+      maxAttempts: 3
+      waitDuration: 1s

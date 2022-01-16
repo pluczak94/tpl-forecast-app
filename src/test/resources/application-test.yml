@@ -1,0 +1,15 @@
+open-weather:
+  config:
+    apiKey: API_KEY
+    url: http://localhost:8081/api
+spring:
+  cloud:
+    gcp:
+      core:
+        enabled: false
+      secretmanager:
+        bootstrap:
+          enabled: false
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration

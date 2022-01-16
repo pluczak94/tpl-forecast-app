@@ -1,0 +1,5 @@
+open-weather:
+  config:
+    apiKey: "API_KEY"
+
+
